@@ -1,0 +1,1980 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Desktop Deployment Management Tool API
+  description: >
+    ## Access levels  
+
+    - All APIs need to have an authorization token, except for '/admin/login'.  
+
+    - Most APIs allow only administrator access, except for the following.  
+      - GET /migrations
+      - GET /migrations/:migrationId
+      - PATCH /migrations/:migrationId
+      - GET /surveyQuestions
+      - POST /surveyResponses
+      - GET /teams/project/:projectId  
+
+    ## Uniqueness
+
+    - User: User ID  - Computer: Serial No - Application: Name + Version -
+    Department: Name
+
+    ## Lookup
+
+    - Tables should save LookupData value instead of ID.
+basePath: /
+schemes:
+  - http
+  - https
+securityDefinitions:
+  bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+tags:
+  - name: Security
+  - name: Data
+  - name: Project
+  - name: Email
+  - name: Migration
+  - name: Application
+  - name: Computer
+  - name: User
+  - name: Department
+  - name: Team
+  - name: Survey
+  - name: Lookup
+paths:
+  /admin/login:
+    post:
+      summary: Administrator login
+      tags:
+        - Security
+      security: []
+      produces:
+        - application/json
+      operationId: adminLogin
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: admin login request
+          schema:
+            type: object
+            required:
+              - username
+              - password
+            properties:
+              username:
+                type: string
+                description: the user login name
+              password:
+                type: string
+                description: the password
+                format: password
+      responses:
+        '201':
+          description: The operation succeeded.
+          schema:
+            type: object
+            properties:
+              accessToken:
+                type: string
+                description: access token
+              accessTokenExpiredOn:
+                type: string
+                description: access token expired on
+                format: date-time
+        '400':
+          $ref: '#/responses/BadRequest'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /data:
+    post:
+      summary: Import raw data into the system.
+      tags:
+        - Data
+      description: >
+        - Note: An xls file is expected to have 3 sheets: Users, Computers,
+        Applications - parse the sheets and create the records in DB with
+        projectId set to null
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      consumes:
+        - multipart/form-data
+      operationId: dataImport
+      parameters:
+        - in: formData
+          name: dataFile
+          type: file
+          description: The file to upload.
+      responses:
+        '201':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Project'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /projects:
+    post:
+      summary: Create a new project in the system.
+      tags:
+        - Project
+      description: >
+        - Note: All selected applications will need to be migrated on all
+        computers by default. - Note: Initialize migration records for all
+        computers.
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: createProject
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - projectName
+              - users
+              - applications
+              - computers
+            properties:
+              projectName:
+                type: string
+              users:
+                type: array
+                items:
+                  $ref: '#/definitions/Id'
+              applications:
+                type: array
+                items:
+                  $ref: '#/definitions/Id'
+              computers:
+                type: array
+                items:
+                  $ref: '#/definitions/Id'
+      responses:
+        '201':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Project'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '409':
+          $ref: '#/responses/Conflict'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    get:
+      summary: Retrieve Projects in the system.
+      tags:
+        - Project
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findProjects
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/projects/:projectId':
+    get:
+      summary: Retrieve the project with provided id.
+      tags:
+        - Project
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findProjectById
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          type: string
+          format: uuid
+          description: id of the project.
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Project'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update the project with the provided id.
+      tags:
+        - Project
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: updateProjectById
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          type: string
+          description: id of the project
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectData'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Project'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /emailTemplates:
+    get:
+      summary: Retrieve Email templates in the system.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findProjectEmailTemplates
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EmailTemplate'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    post:
+      summary: Create a new email template for a project in the system.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: createProjectEmailTemplate
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EmailTemplateCreateData'
+      responses:
+        '201':
+          description: >
+            The operation succeeded. - Note: Do not return the file contents of
+            the attachment when successful.
+          schema:
+            $ref: '#/definitions/EmailTemplate'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '409':
+          $ref: '#/responses/Conflict'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/emailTemplates/:templateId':
+    delete:
+      summary: Delete the email template of a project with the provided id.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: deleteProjectEmailTemplateById
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          type: string
+          description: id of the email template.
+      responses:
+        '204':
+          description: Successfully delete the email template with the provided id.
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update the email template with the provided id.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: updateProjectEmailTemplateById
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          type: string
+          description: id of the email template.
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EmailTemplateUpdateData'
+      responses:
+        '200':
+          description: >
+            The operation succeeded. - Note: Do not return the file contents of
+            the attachment when successful.
+          schema:
+            $ref: '#/definitions/EmailTemplate'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/emailTemplates/:templateId/test':
+    get:
+      summary: >-
+        Sends a test e-mail message to the test email address of the project
+        using the specified e-mail template.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: sendProjectTestEmail
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          type: string
+          description: id of the email template.
+      responses:
+        '204':
+          description: Successfully send a test email.
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /migrations/statistics/status:
+    get:
+      summary: Retrieve the migration status statistics.
+      tags:
+        - Migration
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: statisticsMigrationStatus
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: object
+            properties:
+              Pendings:
+                type: integer
+                description: number of migration records in Pending status.
+                format: int32
+              Scheduleds:
+                type: integer
+                description: number of migration records in Scheduled status.
+                format: int32
+              Completes:
+                type: integer
+                description: number of migration records in Complete status.
+                format: int32
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /migrations:
+    get:
+      summary: Retrieve Migrations in the system.
+      tags:
+        - Migration
+      description: |
+        Retrieve Migrations in the system.  
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findMigrations
+      parameters:
+        - name: upcoming
+          in: query
+          description: >
+            Choosing upcoming migrations. - Note: upcoming means the planDate is
+            closest to today (including the same day), and the migration status
+            is Scheduled.
+          required: false
+          type: boolean
+        - name: start
+          in: query
+          description: the lower bound of planDate
+          required: false
+          type: string
+          format: date
+        - name: end
+          in: query
+          description: the upper bound of planDate
+          required: false
+          type: string
+          format: date
+        - name: migrationStatus
+          in: query
+          description: the migartion status
+          required: false
+          type: string
+          enum:
+            - Pending
+            - Scheduled
+            - Complete
+        - name: projectId
+          in: query
+          required: false
+          type: string
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Migration'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/migrations/:migrationId':
+    get:
+      summary: Retrieve the migration with provided id.
+      tags:
+        - Migration
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findMigrationById
+      parameters:
+        - name: migrationId
+          in: path
+          required: true
+          type: string
+          description: id of the migration.
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Migration'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    patch:
+      summary: Partially update the migration with the provided id.
+      tags:
+        - Migration
+      description: >
+        Only the fields that are provided in the body will be changed.   - Note:
+        If call by self service, the user id in the token should match the
+        computer's primaryUserId.  - Note: If call by self service, the
+        following properties in the body is required.
+          - currentComputerId
+          - currentDepartmentId
+          - currentLocation
+          - planDate
+          - applications
+          - newApplications (optional)
+        - Note: If call by admin, the following properties in the body is
+        required.
+          - actualDate
+          - type
+          - status
+          - replacementDevice
+          - currentHWModel
+          - currentKeyboardLayout
+          - newKeyboardLayout
+          - monitors
+          - newDeviceSiNo
+          - newApplications (optional)
+        - Note: The body properties required in different calls should not be
+        mixed together, except for the property applications. - Note: If the
+        application was added by an administrator, you should set the
+        additinalInstalledFlag to "Y". Other set to "N".
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: partiallyUpdateMigrationById
+      parameters:
+        - name: migrationId
+          in: path
+          required: true
+          type: string
+          description: id of the migration.
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/MigrationPatchData'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Migration'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /applications:
+    get:
+      summary: Retrieve applications in the system.
+      tags:
+        - Application
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          type: string
+          description: id of the project.
+      description: |
+        Retrieve Applications in the system.
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findApplications
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Application'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    patch:
+      summary: Partially update the application with the provided id.
+      tags:
+        - Application
+      description: |
+        Only the fields that are provided in the body will be changed.
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: partiallyUpdateApplications
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          type: string
+          description: id of the project.
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              applications:
+                type: array
+                items:
+                  $ref: '#/definitions/ApplicationUpdateData'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: object
+            properties:
+              updatedCount:
+                type: integer
+                description: number of applications updated
+                format: int32
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /computers:
+    get:
+      summary: Retrieve computers in the system.
+      tags:
+        - Computer
+      operationId: findComputers
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          type: string
+          description: id of the project.
+        - name: noProject
+          in: query
+          required: false
+          type: boolean
+          description: not belong any project
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Computer'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /users:
+    get:
+      summary: Retrieve users in the system.
+      tags:
+        - User
+      operationId: findUsers
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          type: string
+          description: id of the project.
+        - name: noProject
+          in: query
+          required: false
+          type: boolean
+          description: not belong any project
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /departments:
+    get:
+      summary: Retrieve departments in the system.
+      tags:
+        - Department
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findDepartments
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Department'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /teams:
+    get:
+      summary: Retrieve teams in the system.
+      tags:
+        - Team
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findTeams
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Team'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    post:
+      summary: Create a new team schedule.
+      tags:
+        - Team
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: createTeam
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Team'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Team'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/teams/:teamId':
+    put:
+      summary: Update the team with the provided id.
+      tags:
+        - Team
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: updateTeamById
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          type: string
+          description: id of the team.
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Team'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/Team'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/teams/project/:projectId':
+    get:
+      summary: Retrieve teams belong the project.
+      tags:
+        - Team
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findProjectTeams
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          type: string
+          description: id of the project.
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Team'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /surveyQuestions:
+    get:
+      summary: Retrieve survey questions in the system.
+      tags:
+        - Survey
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findSurveyQuestions
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SurveyQuestion'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    post:
+      summary: Create survey questions.
+      tags:
+        - Survey
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: createSurveyQuestions
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SurveyQuestionData'
+      responses:
+        '201':
+          description: The operation succeeded.
+          schema:
+            type: object
+            properties:
+              createdCount:
+                type: integer
+                description: number of created survey questions
+                format: int32
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update survey questions.
+      tags:
+        - Survey
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: updateSurveyQuestions
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SurveyQuestion'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: object
+            properties:
+              updatedCount:
+                type: integer
+                description: number of updated survey questions
+                format: int32
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /surveyResponses:
+    post:
+      summary: Create a new survey response in the system.
+      tags:
+        - Survey
+      description: >
+        - Note: The contents of the answer are saved in the body property in
+        JSON format. - Note: The average score is calculated on the basis of the
+        scoring answer.
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: createSurveyResponse
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/SurveyResponseData'
+      responses:
+        '201':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/SurveyResponse'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  /emailServerConfig:
+    get:
+      summary: Retrieve the email server config.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: getEmailServerConfig
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/EmailServerConfig'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update email server config.
+      tags:
+        - Email
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: updateEmailServerConfig
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EmailServerConfig'
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            $ref: '#/definitions/EmailServerConfig'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '500':
+          $ref: '#/responses/InternalServerError'
+  '/lookup/:typeCode':
+    get:
+      summary: Retrieve lookup data by type code in the system.
+      tags:
+        - Lookup
+      security:
+        - bearer: []
+      produces:
+        - application/json
+      operationId: findLookup
+      parameters:
+        - name: typeCode
+          in: path
+          description: the lookup type code
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The operation succeeded.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LookupData'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthenticated'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/InternalServerError'
+responses:
+  BadRequest:
+    description: >-
+      BAD REQUEST - if there was problem with the request (e.g. malformed or
+      some parameters are missing).
+    schema:
+      $ref: '#/definitions/Error'
+  Unauthenticated:
+    description: >-
+      UNAUTHENTICATED - if the request didn't bear authentication information or
+      the authentication information is invalid.
+    schema:
+      $ref: '#/definitions/Error'
+  Forbidden:
+    description: >-
+      FORBIDDEN - if the requesting user didn't have permission to perform the
+      requested operation.
+    schema:
+      $ref: '#/definitions/Error'
+  NotFound:
+    description: NOT FOUND - if the resource in request did not exist
+    schema:
+      $ref: '#/definitions/Error'
+  InternalServerError:
+    description: >-
+      INTERNAL SERVER ERROR - if the request was properly formatted, but the
+      operation failed on the server side
+    schema:
+      $ref: '#/definitions/Error'
+  Conflict:
+    description: >-
+      CONFLICT - if the entity to be created conflicts with the uniqueness
+      property of an entity that already exists in the table
+    schema:
+      $ref: '#/definitions/Error'
+definitions:
+  Error:
+    description: |
+      An error entity.
+    properties:
+      message:
+        type: string
+        description: The error message.
+  Id:
+    type: string
+    format: uuid
+    description: The id.
+    example: 507f191e810c19729de860ea
+  Record:
+    type: object
+    properties:
+      createdOn:
+        type: string
+        format: date-time
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+      createdBy:
+        type: string
+        description: the create user id
+      updatedOn:
+        type: string
+        format: date-time
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+      updatedBy:
+        type: string
+        description: the last update user id
+  User:
+    type: object
+    x-table-model: true
+    allOf:
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/UserData'
+  UserData:
+    type: object
+    required:
+      - id
+      - name
+      - vipFlag
+      - supportLanguage
+      - site
+      - siteCode
+      - building
+      - floor
+      - deskInformation
+      - streetAddress
+      - city
+      - state
+      - departmentName
+      - emailAddress
+      - managerName
+      - managerEmail
+    properties:
+      id:
+        $ref: '#/definitions/Id'
+        description: User AD ID
+        x-is-key: true
+      name:
+        type: string
+        description: 'User First Name, Last Name'
+      vipFlag:
+        type: string
+        enum:
+          - 'Y'
+          - 'N'
+        description: Yes means this user is a VIP user
+      supportLanguage:
+        type: string
+        description: 'e.g. English, Dutch etc.'
+      site:
+        type: string
+        description: Site details
+      siteCode:
+        type: string
+        description: Site Code for the site the user is seated
+      building:
+        type: string
+        description: The building in which the user is located
+      floor:
+        type: integer
+        format: int32
+        description: The floor in the building in which the user is located
+      deskInformation:
+        type: string
+        description: Desk number where the user is located
+      streetAddress:
+        type: string
+        description: User Location
+      city:
+        type: string
+        description: User Location
+      state:
+        type: string
+        description: User Location
+      departmentName:
+        type: string
+        description: User department or Business Group
+      departmentId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: Department
+      emailAddress:
+        type: string
+        format: User Email ID
+      managerName:
+        type: string
+        description: Supervisor name
+      managerEmail:
+        type: string
+        format: email
+        description: Supervisor mail ID
+      projectId:
+        type: string
+        x-foreign-model: Project
+  Application:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/ApplicationData'
+  ApplicationData:
+    type: object
+    required:
+      - name
+      - version
+      - manufacturer
+      - language
+      - packageId
+      - compatibility
+      - typeOfInstall
+      - sourcePath
+      - status
+    properties:
+      name:
+        type: string
+        description: E.g Visio etc.
+      version:
+        type: integer
+        format: int32
+        description: e.g. 3.0.1.1
+      manufacturer:
+        type: string
+        description: 'e.g. Microsoft, Adobe etc.'
+      language:
+        type: string
+        description: 'e.g. English, Dutch etc.'
+      packageId:
+        type: string
+        description: SCCM Package ID/Package Name
+        x-foreign-model: Package
+      compatibility:
+        type: string
+        description: Compatibility for Win10
+      typeOfInstall:
+        type: string
+        enum:
+          - Manual
+          - Packaged
+      sourcePath:
+        type: string
+        description: Source Media for Manual Install
+      status:
+        type: string
+        enum:
+          - Rationalization
+          - Packaging
+          - UAT
+          - Ready
+      rationalization:
+        type: string
+        description: rationalization
+      targetVersion:
+        type: string
+        description: target version
+      targetAppId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: TargetApp
+      targetAppName:
+        type: string
+      comment:
+        type: string
+  ApplicationUpdateData:
+    type: object
+    required:
+      - id
+      - version
+      - status
+      - rationalization
+      - targetAppId
+      - targetVersion
+    properties:
+      id:
+        $ref: '#/definitions/Id'
+        x-is-key: true
+      version:
+        type: string
+      status:
+        type: string
+      rationalization:
+        type: string
+      targetVersion:
+        type: string
+      targetAppId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: TargetApp
+      comment:
+        type: string
+  Computer:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/ComputerData'
+  ComputerData:
+    type: object
+    required:
+      - name
+      - manufacturer
+      - assetTag
+      - assetType
+      - serialNo
+      - assetModel
+      - cpu
+      - memory
+      - diskSpace
+      - freeSpace
+      - operationSystem
+      - lastLogonName
+      - primaryFlag
+      - sharedFlag
+      - ipAddress
+      - domain
+      - biosVersion
+      - purchaseDate
+      - primaryUserId
+    properties:
+      name:
+        type: string
+        description: Computer Name e.g. LT110022
+      manufacturer:
+        type: string
+        description: 'e.g. Fujitsu, HP etc.'
+      assetTag:
+        type: string
+        description: OMV Asset Tag
+      assetType:
+        type: string
+        enum:
+          - Laptop
+          - Desktop
+      serialNo:
+        type: string
+        description: Computer Serial Number
+      assetModel:
+        type: string
+        description: 'Computer Model e.g. HP Spectre 360, Surface Pro 4 etc.'
+      cpu:
+        type: string
+        description: CPU Info
+      memory:
+        type: string
+        description: Memory Info e.g. 8 GB
+      diskSpace:
+        type: string
+        description: Computer Space e.g. 320 GB
+      freeSpace:
+        type: string
+        description: 'Free Space ,C, D, E Info'
+      operationSystem:
+        type: string
+        description: OS Version
+      lastLogonName:
+        type: string
+        description: Last Logged on User
+      primaryFlag:
+        type: string
+        enum:
+          - 'Y'
+          - 'N'
+        description: Yes means this is the primary machine of the user associated.
+      primaryUserId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: PrimaryUser
+      sharedFlag:
+        type: string
+        enum:
+          - 'Y'
+          - 'N'
+        description: Yes means this device is shared between different users.
+      ipAddress:
+        type: string
+        description: Computer IP Address
+      domain:
+        type: string
+        description: Computer Domain
+      biosVersion:
+        type: integer
+        description: Computer BIOS Version
+        format: int32
+      purchaseDate:
+        type: string
+        description: >
+          The date on which the device was purchased (to determine to re-use the
+          machine or not). 'ISO-8601 formatted date times
+          (YYYY-MM-DDTHH:mm:ss.sssZ)'.
+        format: date-time
+      currentMigrationId:
+        $ref: '#/definitions/Id'
+        description: The migration activity ID that is in progress on the computer.
+        x-foreign-model: CurrentMigration
+  InstalledApplication:
+    type: object
+    x-table-model: true
+    required:
+      - id
+      - computerId
+      - applicationId
+      - additinalInstalledFlag
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+          computerId:
+            $ref: '#/definitions/Id'
+          applicationId:
+            $ref: '#/definitions/Id'
+          requiredFlag:
+            type: string
+            enum:
+              - 'Y'
+              - 'N'
+            description: This flag can be set on self service screen.
+          additinalInstalledFlag:
+            type: string
+            enum:
+              - 'Y'
+              - 'N'
+            description: >-
+              This flag identifies the application that was added on the
+              migration status screen
+      - $ref: '#/definitions/Record'
+  Department:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/DepartmentData'
+  DepartmentData:
+    type: object
+    required:
+      - name
+      - employees
+      - officeLocation
+      - applications
+    properties:
+      name:
+        type: string
+      employees:
+        type: integer
+        format: int32
+      officeLocation:
+        type: string
+      applications:
+        type: integer
+        format: int32
+  Team:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/TeamData'
+  TeamData:
+    type: object
+    required:
+      - projectId
+      - startDate
+      - endDate
+      - mondayMax
+      - tuesdayMax
+      - wednesdayMax
+      - thursdayMax
+      - fridayMax
+      - saturdayMax
+      - sundayMax
+    properties:
+      projectId:
+        type: string
+        x-foreign-model: Project
+      name:
+        type: string
+      startDate:
+        type: string
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+        format: date-time
+      endDate:
+        type: string
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+        format: date-time
+      mondayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      tuesdayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      wednesdayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      thursdayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      fridayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      saturdayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+      sundayMax:
+        type: integer
+        format: int32
+        description: zero means unlimit
+  ProjectTeam:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+          teamId:
+            $ref: '#/definitions/Id'
+          projectId:
+            $ref: '#/definitions/Id'
+      - $ref: '#/definitions/Record'
+  Project:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/ProjectData'
+  ProjectData:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      testEmail:
+        type: string
+      enableEmailFlag:
+        type: string
+        enum:
+          - 'Y'
+          - 'N'
+        default: 'Y'
+  Migration:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/MigrationData'
+  MigrationData:
+    type: object
+    properties:
+      currentComputerId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: CurrentComputer
+      currentComputer:
+        $ref: '#/definitions/Computer'
+      computerPrimaryUser:
+        $ref: '#/definitions/User'
+      currentDepartmentId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: CurrentDepartment
+      currentDepartmentName:
+        type: string
+      currentLocation:
+        type: string
+      planDate:
+        type: string
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+        format: date-time
+      comment:
+        type: string
+      projectId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: Project
+      actualDate:
+        type: string
+        description: 'ISO-8601 formatted date times (YYYY-MM-DDTHH:mm:ss.sssZ)'
+        format: date-time
+      type:
+        type: string
+      status:
+        type: string
+      replacementDevice:
+        type: string
+      migrateData:
+        type: string
+      currentHWModel:
+        type: string
+        description: Current H/W Model
+      currentKeyboardLayout:
+        type: string
+        description: Current Keyboard Layout
+      newKeyboardLayout:
+        type: string
+        description: New Keyboard Layout
+      monitors:
+        type: string
+        description: No. of Monitors
+      newDeviceSiNo:
+        type: string
+        description: New Device SI/No
+      applications:
+        type: array
+        items:
+          $ref: '#/definitions/InstalledApplication'
+  MigrationPatchData:
+    type: object
+    properties:
+      actualDate:
+        type: string
+        format: date-time
+      type:
+        type: string
+      status:
+        type: string
+      replacementDevice:
+        type: string
+      migrateData:
+        type: string
+      currentHWModel:
+        type: string
+      currentKeyboardLayout:
+        type: string
+      newKeyboardLayout:
+        type: string
+      monitors:
+        type: string
+      newDeviceSiNo:
+        type: string
+      applications:
+        type: array
+        description: appcations to install in the plan
+        items:
+          $ref: '#/definitions/Application'
+      newApplications:
+        type: array
+        description: array of additional installed application
+        items:
+          $ref: '#/definitions/Application'
+  EmailServerConfig:
+    type: object
+    x-table-model: true
+    required:
+      - address
+      - port
+      - serverType
+      - senderName
+      - username
+      - password
+      - senderEmail
+    properties:
+      address:
+        type: string
+        description: the address
+      port:
+        type: string
+        description: port
+      serverType:
+        type: string
+        description: server type
+      senderName:
+        type: string
+        description: sender name
+      username:
+        type: string
+        description: username
+      password:
+        type: string
+        description: the password
+        format: password
+      senderEmail:
+        type: string
+        description: sender email
+  SurveyQuestion:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/SurveyQuestionData'
+  SurveyQuestionData:
+    type: object
+    required:
+      - question
+      - order
+    properties:
+      question:
+        type: string
+      order:
+        type: integer
+        format: int32
+  SurveyResponse:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/SurveyResponseData'
+  SurveyResponseData:
+    type: object
+    required:
+      - body
+      - avgScore
+      - userId
+    properties:
+      body:
+        type: string
+      avgScore:
+        type: integer
+        format: int32
+      userId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: User
+  EmailTemplate:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/EmailTemplateData'
+  EmailTemplateData:
+    type: object
+    properties:
+      type:
+        type: string
+      subject:
+        type: string
+      body:
+        type: string
+      projectId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: Project
+      department:
+        type: string
+      attachements:
+        type: array
+        items:
+          $ref: '#/definitions/EmailAttachement'
+  EmailTemplateCreateData:
+    type: object
+    required:
+      - type
+      - subject
+      - body
+      - projectId
+      - departmentId
+    properties:
+      type:
+        type: string
+      subject:
+        type: string
+      body:
+        type: string
+      department:
+        type: string
+      projectId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: Project
+      attachements:
+        type: array
+        items:
+          $ref: '#/definitions/EmailAttachementData'
+  EmailTemplateUpdateData:
+    type: object
+    required:
+      - type
+      - subject
+      - body
+      - projectId
+      - departmentId
+    properties:
+      type:
+        type: string
+      subject:
+        type: string
+      body:
+        type: string
+      departmentId:
+        type: string
+        x-foreign-model: Department
+      projectId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: Project
+      newAttachements:
+        type: array
+        items:
+          $ref: '#/definitions/EmailAttachementData'
+      removeAttachementIds:
+        type: array
+        items:
+          $ref: '#/definitions/Id'
+  EmailAttachement:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+      - $ref: '#/definitions/Record'
+      - $ref: '#/definitions/EmailAttachementData'
+  EmailAttachementData:
+    type: object
+    required:
+      - emailTemplateId
+      - name
+      - fileContent
+    properties:
+      emailTemplateId:
+        $ref: '#/definitions/Id'
+        x-foreign-model: EmailTemplate
+      name:
+        type: string
+      fileContent:
+        type: string
+        format: byte
+  LookupType:
+    type: object
+    x-table-model: true
+    allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/definitions/Id'
+            x-is-key: true
+          name:
+            type: string
+          code:
+            type: string
+      - $ref: '#/definitions/Record'
+  LookupData:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Record'
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            x-is-key: true
+          lookupTypeId:
+            $ref: '#/definitions/Id'
+          name:
+            type: string
+          value:
+            type: string
+          obsoleteFlag:
+            type: string
+            enum:
+              - 'Y'
+              - 'N'
+            description: The obsolete flag is "Y" should be ignored when retrieving.
