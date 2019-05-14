@@ -1,1 +1,8 @@
-[{"name":"THEFT"},{"name":"FIRE"},{"name":"ACCIDENTAL DAMAGE"},{"name":"WINDSCREEN"},{"name":"VANDALISM\n"}]
+{
+  EID: 'EID559',
+  name: 'User 555',
+  role: 'Leader',
+  status: 'Active',
+  username: 'user001',
+  password: 'password'
+}

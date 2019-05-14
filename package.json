@@ -3,7 +3,7 @@
   "displayName": "code-scalpel",
   "description": "",
   "publisher": "code-scalpel",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.30.0"
   },
@@ -31,165 +31,193 @@
         }
       },
       {
-				"command": "projectInit.modelToggleOff",
-				"title": "Model Toggle",
-				"icon": {
-					"light": "media/light/modelToggleOff.svg",
-					"dark": "media/dark/modelToggleOff.svg"
-				}
-			},
+        "command": "projectInit.modelToggleOff",
+        "title": "Model Toggle",
+        "icon": {
+          "light": "media/light/modelToggleOff.svg",
+          "dark": "media/dark/modelToggleOff.svg"
+        }
+      },
       {
-				"command": "projectInit.modelToggleOn",
-				"title": "Model Toggle",
-				"icon": {
-					"light": "media/light/modelToggleOn.svg",
-					"dark": "media/dark/modelToggleOn.svg"
-				}
-			},
+        "command": "projectInit.modelToggleOn",
+        "title": "Model Toggle",
+        "icon": {
+          "light": "media/light/modelToggleOn.svg",
+          "dark": "media/dark/modelToggleOn.svg"
+        }
+      },
       {
-				"command": "projectInit.fileSync",
+        "command": "projectInit.fileSync",
         "title": "File Sync",
         "icon": {
-					"light": "media/light/fileSync.svg",
-					"dark": "media/dark/fileSync.svg"
-				}
-			},
+          "light": "media/light/fileSync.svg",
+          "dark": "media/dark/fileSync.svg"
+        }
+      },
       {
-				"command": "projectInit.modelOn",
-				"title": "Model On",
-				"icon": {
-					"light": "media/light/modelOn.svg",
-					"dark": "media/dark/modelOn.svg"
-				}
-			},
+        "command": "projectInit.modelOn",
+        "title": "Model On",
+        "icon": {
+          "light": "media/light/modelOn.svg",
+          "dark": "media/dark/modelOn.svg"
+        }
+      },
       {
-				"command": "projectInit.modelOff",
-				"title": "Model Off",
-				"icon": {
-					"light": "media/light/modelOff.svg",
-					"dark": "media/dark/modelOff.svg"
-				}
-			},
+        "command": "projectInit.modelOff",
+        "title": "Model Off",
+        "icon": {
+          "light": "media/light/modelOff.svg",
+          "dark": "media/dark/modelOff.svg"
+        }
+      },
       {
-				"command": "projectInit.modelPaginationOn",
-				"title": "Model Pagination On",
-				"icon": {
-					"light": "media/light/paginationOn.svg",
-					"dark": "media/dark/paginationOn.svg"
-				}
-			},
+        "command": "projectInit.modelPaginationOn",
+        "title": "Model Pagination On",
+        "icon": {
+          "light": "media/light/paginationOn.svg",
+          "dark": "media/dark/paginationOn.svg"
+        }
+      },
       {
-				"command": "projectInit.modelPaginationOff",
-				"title": "Model Pagination Off",
-				"icon": {
-					"light": "media/light/paginationOff.svg",
-					"dark": "media/dark/paginationOff.svg"
-				}
-			},
+        "command": "projectInit.modelPaginationOff",
+        "title": "Model Pagination Off",
+        "icon": {
+          "light": "media/light/paginationOff.svg",
+          "dark": "media/dark/paginationOff.svg"
+        }
+      },
       {
-				"command": "projectInit.propertyKeyOn",
-				"title": "Property Key On",
-				"icon": {
-					"light": "media/light/keyOn.svg",
-					"dark": "media/dark/keyOn.svg"
-				}
-			},
+        "command": "projectInit.propertyKeyOn",
+        "title": "Property Key On",
+        "icon": {
+          "light": "media/light/keyOn.svg",
+          "dark": "media/dark/keyOn.svg"
+        }
+      },
       {
-				"command": "projectInit.propertyKeyOff",
-				"title": "Property Key Off",
-				"icon": {
-					"light": "media/light/keyOff.svg",
-					"dark": "media/dark/keyOff.svg"
-				}
-			},
+        "command": "projectInit.propertyKeyOff",
+        "title": "Property Key Off",
+        "icon": {
+          "light": "media/light/keyOff.svg",
+          "dark": "media/dark/keyOff.svg"
+        }
+      },
       {
-				"command": "projectInit.propertyForeignKeyOn",
-				"title": "Property Foreign Key On",
-				"icon": {
-					"light": "media/light/fkeyOn.svg",
-					"dark": "media/dark/fkeyOn.svg"
-				}
-			},
+        "command": "projectInit.propertyForeignKeyOn",
+        "title": "Property Foreign Key On",
+        "icon": {
+          "light": "media/light/fkeyOn.svg",
+          "dark": "media/dark/fkeyOn.svg"
+        }
+      },
       {
-				"command": "projectInit.propertyForeignKeyOff",
-				"title": "Property Foreign Key Off",
-				"icon": {
-					"light": "media/light/fkeyOff.svg",
-					"dark": "media/dark/fkeyOff.svg"
-				}
-			},
+        "command": "projectInit.propertyForeignKeyOff",
+        "title": "Property Foreign Key Off",
+        "icon": {
+          "light": "media/light/fkeyOff.svg",
+          "dark": "media/dark/fkeyOff.svg"
+        }
+      },
       {
-				"command": "projectInit.initProjectSwitchOn",
-				"title": "Project Init Switch On",
-				"icon": {
-					"light": "media/light/modelToggleOn.svg",
-					"dark": "media/dark/modelToggleOn.svg"
-				}
-			},
+        "command": "projectInit.initProjectSwitchOn",
+        "title": "Project Init Switch On",
+        "icon": {
+          "light": "media/light/modelToggleOn.svg",
+          "dark": "media/dark/modelToggleOn.svg"
+        }
+      },
       {
-				"command": "projectInit.initProjectSwitchOff",
-				"title": "Project Init Switch Off",
-				"icon": {
-					"light": "media/light/modelToggleOff.svg",
-					"dark": "media/dark/modelToggleOff.svg"
-				}
-			},
+        "command": "projectInit.initProjectSwitchOff",
+        "title": "Project Init Switch Off",
+        "icon": {
+          "light": "media/light/modelToggleOff.svg",
+          "dark": "media/dark/modelToggleOff.svg"
+        }
+      },
       {
-				"command": "projectInit.foreignModelChange",
-				"title": "Property Foreign Model Change",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
-			},
+        "command": "projectInit.foreignModelChange",
+        "title": "Property Foreign Model Change",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
       {
-				"command": "projectInit.initProjectAttrSet",
-				"title": "Project Init Attribute Set",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
-			},
+        "command": "projectInit.initProjectAttrSet",
+        "title": "Project Init Attribute Set",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
       {
-				"command": "projectInit.initProjectLanguage",
-				"title": "Project Init Database",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
-			},
+        "command": "projectInit.initProjectLanguage",
+        "title": "Project Init Database",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
       {
-				"command": "projectInit.initProjectDatabase",
-				"title": "Project Init Language",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
-			},
+        "command": "projectInit.initProjectDatabase",
+        "title": "Project Init Language",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
       {
-				"command": "projectInit.selectFolder",
-				"title": "Project Folder Select",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
-			},
+        "command": "projectInit.selectFolder",
+        "title": "Project Folder Select",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
       {
-				"command": "projectInit.frameGenerate",
-				"title": "Project Code Generate",
-				"icon": {
-					"light": "media/light/codeGenerate.svg",
-					"dark": "media/dark/codeGenerate.svg"
-				}
-			},
+        "command": "projectInit.frameGenerate",
+        "title": "Project Code Generate",
+        "icon": {
+          "light": "media/light/codeGenerate.svg",
+          "dark": "media/dark/codeGenerate.svg"
+        }
+      },
       {
-				"command": "projectInit.coreGenerate",
-				"title": "Project Core Code Generate",
-				"icon": {
-					"light": "media/light/codeGenerate.svg",
-					"dark": "media/dark/codeGenerate.svg"
-				}
-			}
+        "command": "projectInit.coreGenerate",
+        "title": "Project Core Code Generate",
+        "icon": {
+          "light": "media/light/codeGenerate.svg",
+          "dark": "media/dark/codeGenerate.svg"
+        }
+      },
+      {
+        "command": "codeUtils.pasteFolderToggleOn",
+        "title": "Paste Utils Enabled",
+        "icon": {
+          "light": "media/light/modelToggleOn.svg",
+          "dark": "media/dark/modelToggleOn.svg"
+        }
+      },
+      {
+        "command": "codeUtils.pasteFolderToggleOff",
+        "title": "Paste Utils Disabled",
+        "icon": {
+          "light": "media/light/modelToggleOff.svg",
+          "dark": "media/dark/modelToggleOff.svg"
+        }
+      },
+      {
+        "command": "clipboard.paste",
+        "title": "Paste"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "clipboard.paste",
+        "key": "ctrl+v",
+        "mac": "cmd+v",
+        "when": "editorTextFocus"
+      }
     ],
     "viewsContainers": {
       "activitybar": [
@@ -205,95 +233,134 @@
         {
           "id": "projectInit",
           "name": "Gen Code"
-				},
-				{
-					"id": "codeUtil",
-					"name": "Code Utility"
-				}
+        },
+        {
+          "id": "codeUtils",
+          "name": "Code Utility"
+        }
       ]
     },
     "menus": {
       "view/item/context": [
-				{
-					"command": "projectInit.modelToggleOff",
-					"when": "view == projectInit && viewItem =~ /^step_model:off/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.modelToggleOn",
-					"when": "view == projectInit && viewItem =~ /^step_model:on/",
-					"group": "inline"
-        }, {
+        {
+          "command": "projectInit.modelToggleOff",
+          "when": "view == projectInit && viewItem =~ /^step_model:off/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.modelToggleOn",
+          "when": "view == projectInit && viewItem =~ /^step_model:on/",
+          "group": "inline"
+        },
+        {
           "command": "projectInit.fileSync",
           "when": "view == projectInit && viewItem =~ /^step_model/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.modelOn",
-					"when": "view == projectInit && viewItem =~ /^model:on/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.modelOff",
-					"when": "view == projectInit && viewItem =~ /^model:off/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.modelPaginationOn",
-					"when": "view == projectInit && viewItem =~ /^model:.*:page/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.modelPaginationOff",
-					"when": "view == projectInit && viewItem =~ /^model:.*:unpage/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.propertyKeyOn",
-					"when": "view == projectInit && viewItem =~ /^property.*:key/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.propertyKeyOff",
-					"when": "view == projectInit && viewItem =~ /^property.*:unkey/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.propertyForeignKeyOn",
-					"when": "view == projectInit && viewItem =~ /^property.*:foreignKey/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.propertyForeignKeyOff",
-					"when": "view == projectInit && viewItem =~ /^property.*:unForeignKey/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.initProjectSwitchOn",
-					"when": "view == projectInit && viewItem =~ /^init_project:.*:on$/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.initProjectSwitchOff",
-					"when": "view == projectInit && viewItem =~ /^init_project:.*:off$/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.foreignModelChange",
-					"when": "view == projectInit && viewItem =~ /^prop:foreignModel/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.initProjectAttrSet",
-					"when": "view == projectInit && viewItem =~ /^init_project_attr:name/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.initProjectDatabase",
-					"when": "view == projectInit && viewItem =~ /^init_project_attr:database/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.initProjectLanguage",
-					"when": "view == projectInit && viewItem =~ /^init_project_attr:language/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.selectFolder",
-					"when": "view == projectInit && viewItem =~ /^folder:/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.frameGenerate",
-					"when": "view == projectInit && viewItem =~ /^folder:framework/",
-					"group": "inline"
-        }, {
-					"command": "projectInit.coreGenerate",
-					"when": "view == projectInit && viewItem =~ /^folder:core/",
-					"group": "inline"
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.modelOn",
+          "when": "view == projectInit && viewItem =~ /^model:on/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.modelOff",
+          "when": "view == projectInit && viewItem =~ /^model:off/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.modelPaginationOn",
+          "when": "view == projectInit && viewItem =~ /^model:.*:page/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.modelPaginationOff",
+          "when": "view == projectInit && viewItem =~ /^model:.*:unpage/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.propertyKeyOn",
+          "when": "view == projectInit && viewItem =~ /^property.*:key/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.propertyKeyOff",
+          "when": "view == projectInit && viewItem =~ /^property.*:unkey/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.propertyForeignKeyOn",
+          "when": "view == projectInit && viewItem =~ /^property.*:foreignKey/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.propertyForeignKeyOff",
+          "when": "view == projectInit && viewItem =~ /^property.*:unForeignKey/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.initProjectSwitchOn",
+          "when": "view == projectInit && viewItem =~ /^init_project:.*:on$/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.initProjectSwitchOff",
+          "when": "view == projectInit && viewItem =~ /^init_project:.*:off$/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.foreignModelChange",
+          "when": "view == projectInit && viewItem =~ /^prop:foreignModel/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.initProjectAttrSet",
+          "when": "view == projectInit && viewItem =~ /^init_project_attr:name/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.initProjectDatabase",
+          "when": "view == projectInit && viewItem =~ /^init_project_attr:database/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.initProjectLanguage",
+          "when": "view == projectInit && viewItem =~ /^init_project_attr:language/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.selectFolder",
+          "when": "view == projectInit && viewItem =~ /^folder:/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.frameGenerate",
+          "when": "view == projectInit && viewItem =~ /^folder:framework/",
+          "group": "inline"
+        },
+        {
+          "command": "projectInit.coreGenerate",
+          "when": "view == projectInit && viewItem =~ /^folder:core/",
+          "group": "inline"
+        },
+        {
+          "command": "codeUtils.pasteFolderToggleOff",
+          "when": "view == codeUtils && viewItem =~ /^paste_util_folder:off/",
+          "group": "inline"
+        },
+        {
+          "command": "codeUtils.pasteFolderToggleOn",
+          "when": "view == codeUtils && viewItem =~ /^paste_util_folder:on/",
+          "group": "inline"
+        },
+        {
+          "command": "codeUtils.pasteFolderToggleOff",
+          "when": "view == codeUtils && viewItem =~ /^paste_util_item:off/",
+          "group": "inline"
+        },
+        {
+          "command": "codeUtils.pasteFolderToggleOn",
+          "when": "view == codeUtils && viewItem =~ /^paste_util_item:on/",
+          "group": "inline"
         }
       ]
     }
@@ -306,11 +373,24 @@
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.4",
+    "@types/js-yaml": "^3.12.1",
+    "@types/json5": "^0.0.30",
+    "@types/lodash": "^4.14.123",
     "@types/mocha": "^2.2.42",
-    "@types/node": "10.2.0",
-    "js-yaml": "^3.13.1",
+    "@types/mustache": "^0.8.32",
+    "@types/node": "^10.2.0",
+    "debug": "^4.1.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1",
     "vscode": "^1.1.33"
+  },
+  "dependencies": {
+    "clipboardy": "^2.0.0",
+    "joi": "^14.3.1",
+    "js-yaml": "^3.13.1",
+    "json5": "^2.1.0",
+    "lodash": "^4.17.11",
+    "mustache": "^3.0.1"
   }
 }

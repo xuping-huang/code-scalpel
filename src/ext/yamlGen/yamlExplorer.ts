@@ -57,7 +57,9 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 
 		if (!this.isYamlActivate()) { return; }
 		const document = vscode!.window!.activeTextEditor!.document;
-		this.loadYamlConfig(document)
+		if (document) {
+			this.loadYamlConfig(document);
+		}
 	}
 
 	getTreeItem(element: YamlNode): vscode.TreeItem {
@@ -448,12 +450,12 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 		}
   }
 
-	private isYamlActivate(): Thenable<boolean> {
-		if (!vscode.window.activeTextEditor) { return Promise.resolve(false); }
-		if (vscode.window.activeTextEditor.document.uri.scheme !== 'file') { return Promise.resolve(false); }
+	private isYamlActivate(): boolean {
+		if (!vscode.window.activeTextEditor) { return false; }
+		if (vscode.window.activeTextEditor.document!.uri!.scheme !== 'file') { return false; }
 		const document = vscode.window.activeTextEditor.document;
 		const enabled = document.languageId === 'yaml' || document.languageId === 'yml';
-		return Promise.resolve(enabled);
+		return enabled;
 	}
 
 	private cleanYaml(): void {
@@ -738,8 +740,8 @@ export class YamlNode extends vscode.TreeItem {
 	}
 
 	iconPath = {
-		light: path.join(__filename, '..', '..', '..', 'media', 'light', 'step.svg'),
-		dark: path.join(__filename, '..', '..', '..', 'media', 'dark', 'step.svg')
+		light: path.join(__filename, '../../../../', 'media/light/step.svg'),
+		dark: path.join(__filename, '../../../../', 'media/light/step.svg')
 	};
 
 	contextValue = 'yamlnode';

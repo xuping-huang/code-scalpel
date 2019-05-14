@@ -18,7 +18,6 @@ export class PropertyDescriptionProvider implements vscode.CompletionItemProvide
 
       const item = new vscode.CompletionItem(`${res.propertyName} -> ${res.description}`);
       item.insertText = res.snippetDescription;
-      console.log(lineText);
       return resolve([item]);
 
     });
