@@ -3,7 +3,7 @@
   "displayName": "code-scalpel",
   "description": "",
   "publisher": "code-scalpel",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.30.0"
   },
@@ -209,6 +209,22 @@
       {
         "command": "clipboard.paste",
         "title": "Paste"
+      },
+      {
+        "command": "apiPath.property.edit",
+        "title": "Edit property value",
+        "icon":{
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
+      {
+        "command": "apiPath.route.select",
+        "title": "Select route to set path operationId",
+        "icon":{
+          "light": "media/light/fileSelect.svg",
+          "dark": "media/dark/fileSelect.svg"
+        }
       }
     ],
     "keybindings": [
@@ -360,6 +376,16 @@
         {
           "command": "codeUtils.pasteFolderToggleOn",
           "when": "view == codeUtils && viewItem =~ /^paste_util_item:on/",
+          "group": "inline"
+        },
+        {
+          "command": "apiPath.property.edit",
+          "when": "view == projectInit && viewItem =~ /^api_path_property/",
+          "group": "inline"
+        },
+        {
+          "command": "apiPath.route.select",
+          "when": "view == projectInit && viewItem =~ /^step_api_path/",
           "group": "inline"
         }
       ]

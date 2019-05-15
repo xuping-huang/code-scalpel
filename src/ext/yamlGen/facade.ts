@@ -1,6 +1,7 @@
 'use strict';
 import * as vscode from 'vscode';
-import { ProjectInitProvider, YamlNode } from './yamlExplorer';
+import { ProjectInitProvider } from './yamlExplorer';
+import { YamlNode } from './yamlNode';
 
 export function registerYamlCodeGenerate( context: vscode.ExtensionContext){
   const projectInitProvider = new ProjectInitProvider(context);
@@ -68,6 +69,12 @@ export function registerYamlCodeGenerate( context: vscode.ExtensionContext){
     });
     vscode.commands.registerCommand('projectInit.coreGenerate', (node: YamlNode) => {
         projectInitProvider.coreCodeGenerate();
+    });
+    vscode.commands.registerCommand('apiPath.property.edit', (node: YamlNode) => {
+        node.runCommand(projectInitProvider);
+    });
+    vscode.commands.registerCommand('apiPath.route.select', (node: YamlNode) => {
+        projectInitProvider.loadOperationIdFromRoute();
     });
 
 

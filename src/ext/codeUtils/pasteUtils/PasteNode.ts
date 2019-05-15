@@ -14,11 +14,12 @@ export interface CodeConvertor {
 export class PasteNode extends CodeNode {
   constructor(
     label: string,
+    tip: string,
     private parser: CodeParser,
     private convertor: CodeConvertor,
     parent?: CodeNode
   ) {
-    super(label, vscode.TreeItemCollapsibleState.Collapsed, NodeType.PasteUtilItem, parent);
+    super(label, tip, vscode.TreeItemCollapsibleState.Collapsed, NodeType.PasteUtilItem, parent);
   }
 
   match (content: string): boolean {

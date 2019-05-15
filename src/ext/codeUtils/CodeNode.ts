@@ -12,14 +12,17 @@ export const NodeName = {
 export class CodeNode extends vscode.TreeItem {
   private _description: string = '';
   private _isSwitchOn: boolean = false;
+  private _tip: string = '';
 
   constructor(
     public readonly label: string,
+    tip: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly nodeType: NodeType,
     private parent?: CodeNode
   ) {
     super(label, collapsibleState);
+    this._tip = tip;
     switch(nodeType) {
       case NodeType.PasteUtilFolder:
         this._isSwitchOn = true;
@@ -47,7 +50,7 @@ export class CodeNode extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return `${this.label}`;
+    return this._tip;
   }
 
   get description(): string {

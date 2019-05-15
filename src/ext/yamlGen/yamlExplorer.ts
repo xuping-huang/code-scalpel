@@ -4,48 +4,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { exec } from 'child_process';
-
-enum NodeType {
-	StepApiPath,
-	StepModel,
-	StepProjectInit,
-	StepGenerate,
-	Model,
-	Property,
-	PropertyForeignModel,
-	InitProjectName,
-	InitProjectLanguage,
-	InitProjectDatabase,
-	InitProjectNeedMockAPI,
-	InitProjectNeedPagination,
-	InitProjectNeedEmail,
-	InitProjectNeedXlsx,
-	InitProjectNeedFile,
-	InitProjectNeedHttps,
-	InitProjectNeedElasticSearch,
-	InitProjectNeedKafka,
-	InitProjectNeedTwilio,
-	InitProjectNeedAWS,
-	InitProjectNeedPasswordSalt,
-	InitProjectNeedPassword,
-	InitProjectNeedM2M,
-	InitProjectNeedTCJWT,
-	InitProjectNeedJWT,
-	InitProjectNeedKoa,
-	InitProjectNeedSwgdoc,
-	InitProjectNeedHeroku,
-	InitProjectNeedTslint,
-	InitProjectNeedEslint,
-	InitProjectNeedCoverage,
-	InitProjectNeedTest,
-	FrameworkProjectFolder,
-	CoreProjectFolder
-};
+import { YamlNode, NodeType } from './yamlNode';
+import * as executer from './executer';
 
 export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<YamlNode | undefined> = new vscode.EventEmitter<YamlNode | undefined>();
 	readonly onDidChangeTreeData: vscode.Event<YamlNode | undefined> = this._onDidChangeTreeData.event;
+	private _apis: Array<YamlNode> = [];
 	private _models: Array<YamlNode> = [];
 	private _modelProps: any = {};
 	private _hideUnModel: boolean = false;
@@ -66,7 +32,7 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 		if (element.contextValue.startsWith('step_model')){
 			const num = this._hideUnModel ? 'on' : 'off';
 			element.contextValue = `step_model:${num}`;
-		} 
+		}
 		else if (element.contextValue.startsWith('model')) {
 			const suffix = element.isModel() ? 'on' : 'off';
 			const page = element.needPagination() ? 'page' : 'unpage';
@@ -93,14 +59,18 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 	getChildren(element?: YamlNode): Thenable<YamlNode[]> {
 		if (element) {
 			switch(element.nodeType) {
+				case NodeType.StepApiPath:
+					return Promise.resolve(this._apis);
+				case NodeType.ApiPath:
+					return this.getApiPathProperties(element);
 				case NodeType.StepModel:
-					let rets = this._models;
+					let returnModels = this._models;
 					if (this.shouldHideUnModel()) {
-						rets = this._models.filter(node => {
+						returnModels = this._models.filter(node => {
 							return node.isModel();
 						});
 					}
-					return Promise.resolve(rets);
+					return Promise.resolve(returnModels);
 				case NodeType.Model:
 					return Promise.resolve(this._modelProps[element.label]);
 				case NodeType.Property:
@@ -126,7 +96,7 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 		}
     return Promise.resolve([]);
   }
-	
+
   refresh(): void {
     this._onDidChangeTreeData.fire();
 	}
@@ -221,10 +191,10 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 		for(let node of this._folders) {
 			if (node.nodeType === NodeType.FrameworkProjectFolder) {
 				framePath = node.folder;
-			} 
+			}
 		}
 
-		let projectName = undefined; 
+		let projectName = undefined;
 		// generate frame code
 		if (!_.isEmpty(framePath)) {
 			const rootPath = path.resolve(framePath);
@@ -327,6 +297,18 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 
 		const yamlContent = yaml.safeLoad(editor.document.getText());
 		if (yamlContent) {
+			_.each(yamlContent.paths, (value, path) => {
+				_.each(value, (method, verb) => {
+					const apiPath = this._apis.find(api => {
+						return api.pathName === path && api.verbName === verb;
+					});
+
+					if (apiPath) {
+						method['operationId'] = apiPath.operationId;
+					}
+				});
+			});
+
 			let def: any;
 			for(def in yamlContent.definitions) {
 				const nodeModel = this._models.find(model => {
@@ -340,7 +322,7 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 
 				const nodeProps: YamlNode[] = this._modelProps[String(def)];
 				if (!nodeProps) { continue; }
-				
+
 				if (yamlModel.properties) {
 					for(let prop in yamlModel.properties) {
 						const nodeProp = nodeProps.find(node => {
@@ -378,7 +360,19 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 			console.log('End file sync');
 		})
 	}
-  
+
+	private getApiPathProperties(element: YamlNode): Thenable<YamlNode[]>{
+		const nodes : YamlNode[] = [];
+
+		const node = new YamlNode('operationId', vscode.TreeItemCollapsibleState.None, NodeType.ApiPathProperty );
+		node.setParent(element);
+		node.setDesc(element.operationId);
+		node.executer = new executer.ApiPathOperationIdSettingExecuter();
+		nodes.push(node);
+
+		return Promise.resolve(nodes);
+	}
+
   private getTopItems(): Thenable<YamlNode[]> {
     const tops = [];
     tops.push(new YamlNode('1. API元数据设定', vscode.TreeItemCollapsibleState.Collapsed, NodeType.StepApiPath));
@@ -388,7 +382,7 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 
     return Promise.resolve(tops);
 	}
-	
+
 	private getProjectInitItems(): YamlNode[] {
 		if (this._inits.length === 0) {
 			this._inits.push(new YamlNode('project name', vscode.TreeItemCollapsibleState.None, 							NodeType.InitProjectName));
@@ -421,6 +415,40 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 	}
 
   private parseYaml(yamlContent: any) {
+		this._apis = [];
+		_.each(yamlContent.paths, (value, path) => {
+			_.each(value, (method, verb) => {
+				const yamlNode = new YamlNode(`${verb} ${path}`, vscode.TreeItemCollapsibleState.Collapsed, NodeType.ApiPath);
+				yamlNode.pathName = path;
+				yamlNode.verbName = verb;
+				yamlNode.operationId = method.operationId;
+				if (!method.operationId) {
+					const verbName = verb.toLowerCase().trim();
+					if ( verbName === 'post') {
+						yamlNode.operationId = 'create';
+					} else if ( verbName === 'put') {
+						yamlNode.operationId = 'update';
+					} else if ( verbName === 'patch') {
+						yamlNode.operationId = 'partiallyUpdate';
+					} else if ( verbName === 'get') {
+						if (path.indexOf('/:') > 0 || path.indexOf('/{') > 0) {
+							yamlNode.operationId = 'get';
+						} else {
+							yamlNode.operationId = 'search';
+						}
+					}
+				}
+				this._apis.push(yamlNode);
+			});
+		});
+
+		this._apis = this._apis.sort((a, b) => {
+			if ( a.pathName < b.pathName ) { return -1; };
+			if ( a.pathName > b.pathName ) { return 1; };
+			if ( a.verbName < b.verbName ) { return -1; };
+			if ( a.verbName > b.verbName ) { return 1; };
+			return 0;
+		});
 		this._models = [];
 		this._modelProps = {};
 		for(let def in yamlContent.definitions) {
@@ -448,6 +476,11 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 			}
 			this._modelProps[def] = props;
 		}
+		this._models = this._models.sort((a, b) => {
+			if ( a.label < b.label ) { return -1; };
+			if ( a.label > b.label ) { return 1; };
+			return 0;
+		});
   }
 
 	private isYamlActivate(): boolean {
@@ -517,233 +550,46 @@ export class ProjectInitProvider implements vscode.TreeDataProvider<YamlNode> {
 			this.refresh();
 		}
 	}
-}
 
-export class YamlNode extends vscode.TreeItem {
-	private _isRealModel: boolean = true;
-	private _isPagination: boolean = false;
-	private _isKey: boolean = false;
-	private _isForeignKey: boolean = false;
-	private _foreignModel: string | undefined;
-	private _description: string = '';
-	private _parentNode: YamlNode | undefined;
-	private _isSwitchOn: boolean = false;
-	private _folderPath: string = '';
+	private isSamePath(path1: string, path2: string): boolean {
+		const path1s = path1.split('/');
+		const path2s = path2.split('/');
 
-	constructor(
-		public readonly label: string,
-		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly nodeType: NodeType,
-		public readonly command?: vscode.Command
-	) {
-		super(label, collapsibleState);
-		switch(nodeType) {
-			case NodeType.StepModel:
-				this.contextValue = 'step_model';
-				break;
-			case NodeType.StepApiPath:
-				this.contextValue = 'step_api_path';
-				break;
-			case NodeType.StepProjectInit:
-				this.contextValue = 'step_project_init';
-				break;
-			case NodeType.StepGenerate:
-				this.contextValue = 'step_generate';
-				break;
-			case NodeType.Model:
-				this.contextValue = 'model';
-				break;
-			case NodeType.Property:
-				this.contextValue = 'property';
-				break;
-			case NodeType.PropertyForeignModel:
-				this.contextValue = 'prop:foreignModel';
-				break;
-			case NodeType.InitProjectName:
-				this.contextValue = 'init_project_attr:name';
-				break;
-			case NodeType.InitProjectLanguage:
-					this.contextValue = 'init_project_attr:language';
-					break;
-			case NodeType.InitProjectDatabase:
-					this.contextValue = 'init_project_attr:database';
-					break;
-			case NodeType.InitProjectNeedMockAPI:
-					this.contextValue = 'init_project:mockapi';
-					break;
-			case NodeType.InitProjectNeedPagination:
-					this.contextValue = 'init_project:pagination';
-					break;
-			case NodeType.InitProjectNeedEmail:
-					this.contextValue = 'init_project:email';
-					break;
-			case NodeType.InitProjectNeedXlsx:
-					this.contextValue = 'init_project:xlsx';
-					break;
-			case NodeType.InitProjectNeedFile:
-					this.contextValue = 'init_project:fileUpload';
-					break;
-			case NodeType.InitProjectNeedHttps:
-					this.contextValue = 'init_project:https';
-					break;
-			case NodeType.InitProjectNeedElasticSearch:
-					this.contextValue = 'init_project:elasticSearch';
-					break;
-			case NodeType.InitProjectNeedKafka:
-					this.contextValue = 'init_project:kafka';
-					break;
-			case NodeType.InitProjectNeedTwilio:
-					this.contextValue = 'init_project:twilio';
-					break;
-			case NodeType.InitProjectNeedAWS:
-					this.contextValue = 'init_project:aws';
-					break;
-			case NodeType.InitProjectNeedPasswordSalt:
-					this.contextValue = 'init_project:pwdSalt';
-					break;
-			case NodeType.InitProjectNeedPassword:
-					this.contextValue = 'init_project:password';
-					break;
-			case NodeType.InitProjectNeedM2M:
-					this.contextValue = 'init_project:m2m';
-					break;
-			case NodeType.InitProjectNeedTCJWT:
-					this.contextValue = 'init_project:tcjwt';
-					break;
-			case NodeType.InitProjectNeedJWT:
-					this.contextValue = 'init_project:jwt';
-					break;
-			case NodeType.InitProjectNeedKoa:
-					this.contextValue = 'init_project:koa';
-					break;
-			case NodeType.InitProjectNeedSwgdoc:
-					this.contextValue = 'init_project:swgdoc';
-					break;
-			case NodeType.InitProjectNeedHeroku:
-					this.contextValue = 'init_project:heroku';
-					break;
-			case NodeType.InitProjectNeedTslint:
-					this.contextValue = 'init_project:tslint';
-					break;
-			case NodeType.InitProjectNeedEslint:
-					this.contextValue = 'init_project:eslint';
-					break;
-			case NodeType.InitProjectNeedCoverage:
-					this.contextValue = 'init_project:coverage';
-					break;
-			case NodeType.InitProjectNeedTest:
-					this.contextValue = 'init_project:test';
-					break;
-			case NodeType.FrameworkProjectFolder:
-					this.contextValue = 'folder:framework';
-					break;
-			case NodeType.CoreProjectFolder:
-					this.contextValue = 'folder:core';
-					break;
+		if (path1s.length !== path2s.length) { return false; }
+		for(let i=0; i< path1s.length; i++) {
+			if (path1s[i].startsWith(':') || path1s[i].startsWith('{')) { continue; }
+			if (path1s[i].toLowerCase() !== path2s[i].toLowerCase()) { return false; }
+		}
+		return true;
+	}
+
+	async loadOperationIdFromRoute(): Promise<void> {
+		const uris = await vscode.window.showOpenDialog({ canSelectFolders: false, canSelectFiles: true });
+		if (!_.isNil(uris) && uris.length > 0) {
+			const routes = require(uris[0].fsPath);
+			if (routes) {
+				_.each(routes, (value, pathName) => {
+					_.each(value, (method, verbName) => {
+						const api = this._apis.find(item => {
+							return this.isSamePath(item.pathName, pathName) && item.verbName === verbName;
+						});
+						if (api) {
+							_.each(method, (propValue, propName) => {
+								if ( _.isString(propValue)
+									&& !propName.toLowerCase().startsWith('auth')
+									&& !propName.toLowerCase().startsWith('controller')
+									&& !propValue.toLowerCase().startsWith('jwt')
+									&& propValue.indexOf('.') < 0
+									&& propValue.indexOf('/') < 0
+									&& !propValue.toLowerCase().endsWith('controller')) {
+									api.operationId = propValue;
+								}
+							});
+						}
+					});
+				});
+				this.refresh();
+			}
 		}
 	}
-
-	get tooltip(): string {
-		return `${this.label}`;
-	}
-
-	get description(): string {
-		return this._description;
-	}
-
-	autoJudgeModel(): void {
-		if (this.label === 'Id' || this.label === 'Error' || this.label === 'Record' || this.label.endsWith('Data')) {
-			this._isRealModel = false;
-		}
-	}
-
-	autoJudgeProperty(): void {
-		if (this.label.toLowerCase() === 'id') {
-			this._isKey = true;
-		} else if (this.label.endsWith('Id')) {
-			this._isForeignKey = true;
-			const name = this.label.substring(0, this.label.length - 2);
-			this._foreignModel = _.upperFirst(name);
-		}
-	}
-
-	modelToggle(): void {
-		this._isRealModel = !this._isRealModel;
-	}
-
-	isModel(): boolean {
-		return this._isRealModel;
-	}
-
-	needPagination(): boolean {
-		return this._isPagination;
-	}
-
-	paginationToggle(): void {
-		this._isPagination = !this._isPagination;
-	}
-
-	isKey() : boolean {
-		return this._isKey;
-	}
-
-	keyToggle(): void {
-		this._isKey = !this._isKey;
-	}
-
-	isForeignKey(): boolean {
-		return this._isForeignKey;
-	}
-
-	foreignKeyToggle(): void {
-		this._isForeignKey = !this._isForeignKey;
-	}
-
-	foreignModel(): string | undefined{
-		return this._foreignModel;
-	}
-
-	setDesc(desc: string | undefined): void {
-		this._description = desc ? desc : '';
-	}
-
-	setParent(parent: YamlNode): void {
-		this._parentNode = parent;
-	}
-
-	setForeignModel(modelName: string): void {
-		this._foreignModel = modelName;
-	}
-
-	changeForeignModel(modelName: string): void {
-		this._description = modelName;
-		if (this._parentNode) {
-			this._parentNode.setForeignModel(modelName);
-		}
-	}
-
-	isSwitchOn(): boolean {
-		return this._isSwitchOn;
-	}
-
-	switchToggle(): void {
-		this._isSwitchOn = !this._isSwitchOn;
-	}
-
-	setFolder(folder: string): void {
-		this._folderPath = folder;
-		this.setDesc(folder);
-	}
-
-	get folder(): string {
-		return this._folderPath;
-	}
-
-	iconPath = {
-		light: path.join(__filename, '../../../../', 'media/light/step.svg'),
-		dark: path.join(__filename, '../../../../', 'media/light/step.svg')
-	};
-
-	contextValue = 'yamlnode';
-
 }

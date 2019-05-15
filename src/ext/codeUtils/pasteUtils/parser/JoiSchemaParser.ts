@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { CodeParser } from '../PasteNode';
 import * as debug from 'debug';
 

@@ -94,3 +94,10 @@ console.log(fields);
 //   })).required(),
 //   currentUserEID: Joi.EID()
 // };
+
+console.log('name - 200 400'.match(/(4|2)\d\d/gi))
+
+console.log(JSON.stringify('    pm.response.to.have.status(200);'.match(/\s*pm\.response.*\.status\(\s*((4\d\d)|(2\d\d))/gi)));
+
+console.log(/\s*pm\.response.*\.status\(\s*((4|2)\d\d)/gi.exec('    pm.response.to.have.status(200);'));
+console.log(/\s*pm\.response.*\.status\(\s*((4|2)\d\d)/gi.test('    pm.response.to.have.status(200);'));

@@ -7,3 +7,9 @@
 See [CSS, SCSS and Less in VS Code](https://code.visualstudio.com/docs/languages/css) to learn about the features of this extension.
 
 Please read the [CONTRIBUTING.md](https://github.com/Microsoft/vscode/blob/master/extensions/css-language-features/CONTRIBUTING.md) file to learn how to contribute to this extension.
+
+## Publish
+
+- npm run compile
+- vsce package
+- Install vsix from local
