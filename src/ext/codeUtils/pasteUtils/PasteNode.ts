@@ -1,17 +1,26 @@
 import * as vscode from 'vscode';
 import { CodeNode } from '../CodeNode';
 import { NodeType } from '../NodeType';
+import { PathLike } from 'fs';
 
 export interface CodeParser {
   match(content: string): boolean;
-  parse(content: string): any|undefined;
+  parse(content: string, node: PasteNode): any|undefined;
 }
 
 export interface CodeConvertor {
-  convert(configs: any): string|undefined;
+  convert(configs: any, node: PasteNode): string|undefined;
 }
 
 export class PasteNode extends CodeNode {
+  private _configFilePath: PathLike | undefined = undefined;
+  public get configFilePath(): PathLike | undefined  {
+    return this._configFilePath;
+  }
+  public set configFilePath(value: PathLike | undefined ) {
+    this._configFilePath = value;
+  }
+
   constructor(
     label: string,
     tip: string,
@@ -26,8 +35,8 @@ export class PasteNode extends CodeNode {
     return this.parser.match(content);
   }
 
-  parse (content: string): string|undefined {
-    const table = this.parser.parse(content);
-    return this.convertor.convert(table);
+  parse (content: string, node: PasteNode): string|undefined {
+    const table = this.parser.parse(content, node);
+    return this.convertor.convert(table, node);
   }
 }

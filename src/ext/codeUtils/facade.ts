@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { CodeNode } from './CodeNode';
 import { CodeUtilProvider } from './CodeUtilProvider';
-
+import { PasteConfigNode } from './pasteUtils/PasteConfigNode';
 
 
 export function registerCodeUtils( context: vscode.ExtensionContext){
@@ -12,6 +12,7 @@ export function registerCodeUtils( context: vscode.ExtensionContext){
   };
 
   vscode.window.registerTreeDataProvider('codeUtils', codeUtilProvider);
+  console.log('codeUtils provider register');
   vscode.commands.registerCommand('codeUtils.pasteFolderToggleOn', toggleSwitch);
   vscode.commands.registerCommand('codeUtils.pasteFolderToggleOff', toggleSwitch);
 
@@ -21,5 +22,9 @@ export function registerCodeUtils( context: vscode.ExtensionContext){
     if (content) {
       await codeUtilProvider.pastePostProcess(content);
     }
+  });
+
+  vscode.commands.registerCommand("config.property.edit", (node: PasteConfigNode) => {
+    node.runCommand(codeUtilProvider);
   });
 }

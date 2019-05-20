@@ -19,7 +19,7 @@ export class CodeNode extends vscode.TreeItem {
     tip: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly nodeType: NodeType,
-    private parent?: CodeNode
+    protected parent?: CodeNode
   ) {
     super(label, collapsibleState);
     this._tip = tip;
@@ -45,6 +45,9 @@ export class CodeNode extends vscode.TreeItem {
           light: path.join(__filename, '../../../../media/light/otherFolder.svg'),
           dark: path.join(__filename, '../../../../media/dark/otherFolder.svg'),
         };
+        break;
+      case NodeType.PasteUtilItemConfig:
+        this.contextValue = 'paste_util_config';
         break;
     }
   }

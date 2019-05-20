@@ -1,11 +1,8 @@
 import { CodeParser } from '../PasteNode';
-import * as debug from 'debug';
-
-const Debug = debug('test:joiSchemaParser');
 
 export interface JoiSchemaItem {
-  field: string,
-  items: string
+  field: string;
+  items: string;
 }
 
 export class JoiSchemaParser implements CodeParser {
@@ -32,22 +29,16 @@ export class JoiSchemaParser implements CodeParser {
 
     const FIND_ARRAY_ITEMS = /(\w+)\s*:\s*(Joi\.array\(\).items)\(([\s\S]*)\)\)(\.required\(\)|\.optional\(\))?/gi
     const objItems = content.match(FIND_ARRAY_ITEMS);
-    Debug('----------------objItems------------------');
-    Debug(objItems);
     if (objItems && objItems.length > 0) {
       objItems.forEach(itemContent => {
         const FIND_ARRAY_ITEMS2 = /(\w+)\s*:\s*(Joi\.array\(\).items)\(([\s\S]*)\)\)(\.required\(\)|\.optional\(\))?/gi
         const matchItem = FIND_ARRAY_ITEMS2.exec(itemContent);
-        Debug('----------matchItem-----------');
-        Debug(matchItem);
         if (matchItem) {
           const suffix = matchItem[4] ? matchItem[4] : '';
           fields.push({
             field: parent.length > 0 ? `${parent}.${matchItem[1]}` : matchItem[1],
             items: `${matchItem[2]}()${suffix}`
           });
-          console.log('-----------parent----------');
-          console.log(parent.length > 0 ? `${parent}.${matchItem[1]}[0]` : `${matchItem[1]}[0]`);
           this.parseJson( parent.length > 0 ? `${parent}.${matchItem[1]}[0]` : `${matchItem[1]}[0]`, fields, matchItem[3]);
         }
       });
@@ -65,27 +56,17 @@ export class JoiSchemaParser implements CodeParser {
             field: parent.length > 0 ? `${parent}.${matchKey[1]}` : matchKey[1],
             items: `${matchKey[2]}keys()${suffix}`
           });
-          Debug('-----------matchKey[5]------------');
-          Debug(matchKey[5]);
           this.parseJson( parent.length > 0 ? `${parent}.${matchKey[1]}` : matchKey[1], fields, matchKey[5]);
         }
       });
       lastContent = lastContent.replace(FIND_OBJ_KEYS, '');
     }
-    Debug('-----------lastContent------------');
-    Debug(lastContent);
     const FIND_VALUE = /(\w+)\s*:\s*([^,]+\(\w*\))\s*,?/gi
     const values = lastContent.match(FIND_VALUE);
-    Debug('---------------values-----------------');
-    Debug(values);
     if (values && values.length > 0) {
       values.forEach(valueContent => {
-        Debug('--------------valueContent----------');
-        Debug(valueContent);
         const FIND_VALUE2 = /(\w+)\s*:\s*([^,]+\(\w*\))\s*,?/gi
         const matchValue = FIND_VALUE2.exec(valueContent);
-        Debug('--------------matchValue----------');
-        Debug(matchValue);
         if (matchValue) {
           fields.push({
             field: parent.length > 0 ? `${parent}.${matchValue[1]}` : matchValue[1],
