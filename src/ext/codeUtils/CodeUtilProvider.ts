@@ -19,6 +19,7 @@ import { SwaggerModelParser } from './pasteUtils/parser/SwaggerModelParser';
 import { PasteConfigNode } from './pasteUtils/PasteConfigNode';
 import * as executer from './executer';
 import { SwaggerModel2JsonDataConverter } from './pasteUtils/convertor/SwaggerModel2JsonDataConverter';
+import { SwaggerModel2JoiSchemaConverter } from './pasteUtils/convertor/SwaggerModel2JoiSchemaConvertor';
 
 export class CodeUtilProvider implements vscode.TreeDataProvider<CodeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<CodeNode | undefined> = new vscode.EventEmitter<CodeNode | undefined>();
@@ -81,6 +82,7 @@ export class CodeUtilProvider implements vscode.TreeDataProvider<CodeNode> {
     this._pasteItems.push(new PasteNode('Postman > Unit Test', '将Postman的测试用例定义转换为Service单元测试代码', new PostmanSchemaParser(), new UnitTestConvertor(), parent));
     this._pasteItems.push(new PasteNode('Joi Schema >> Test', '将Joi的schema定义转换为单元测试的参数定义风格', new JoiSchemaParser(), new JoiSchema2TestConvertor(), parent));
     this._pasteItems.push(new PasteNode('Swagger Model >> Json Data', '将Swagger的Model定义转换为JSON數據', new SwaggerModelParser(), new SwaggerModel2JsonDataConverter(), parent));
+    this._pasteItems.push(new PasteNode('Swagger Model >> Joi Schema', '将Swagger的Model定义转换为Joi.Schema', new SwaggerModelParser(), new SwaggerModel2JoiSchemaConverter(), parent));
     return Promise.resolve(this._pasteItems);
   }
 

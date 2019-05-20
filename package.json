@@ -3,7 +3,7 @@
   "displayName": "code-scalpel",
   "description": "",
   "publisher": "code-scalpel",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "engines": {
     "vscode": "^1.30.0"
   },
