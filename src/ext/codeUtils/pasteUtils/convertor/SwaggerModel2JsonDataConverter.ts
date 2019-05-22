@@ -11,15 +11,17 @@ interface FakerMatcher {
 }
 
 export class SwaggerModel2JsonDataConverter implements CodeConvertor {
-  convert(model: SwaggerModelDefine, node: PasteNode): string {
+  convert(models: SwaggerModelDefine[], node: PasteNode): string {
     let returnContent = '';
     try {
-      const modelProp: any = {};
-      _.each(model.properties, (prop) => {
-        modelProp[prop.name] = this.fakerProperty(prop, node);
-      });
       const modelJson: any = {};
-      modelJson[model.name] = modelProp;
+      _.each(models, model => {
+        const modelProp: any = {};
+        _.each(model.properties, (prop) => {
+          modelProp[prop.name] = this.fakerProperty(prop, node);
+        });
+        modelJson[model.name] = modelProp;
+      });
       returnContent = JSON.stringify(modelJson, null, 1);
     } catch (err) {
     }
@@ -35,6 +37,10 @@ export class SwaggerModel2JsonDataConverter implements CodeConvertor {
       {
         include: 'city',
         handler: faker.address.city
+      },
+      {
+        include: 'phone',
+        handler: faker.phone.phoneNumberFormat
       },
       {
         include: 'street',
@@ -235,7 +241,7 @@ export class SwaggerModel2JsonDataConverter implements CodeConvertor {
       }
       returned = str;
     }
-    if (!returned) {
+    if (_.isNil(returned)) {
       returned = 'undefined';
     }
     return returned;

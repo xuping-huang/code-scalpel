@@ -3,16 +3,19 @@ import { CodeConvertor, PasteNode } from '../PasteNode';
 import { SwaggerModelDefine, SwaggerModelPropertyDefine } from '../ParseResultDefine';
 
 export class SwaggerModel2JoiSchemaConverter implements CodeConvertor {
-  convert(model: SwaggerModelDefine, node: PasteNode): string {
+  convert(models: SwaggerModelDefine[], node: PasteNode): string {
     const lines: string[] = [];
     try {
-      lines.push(`const ${_.camelCase(model.name)} = Joi.object().keys({`);
-      let lineNum = 0;
-      _.each(model.properties, (prop) => {
-        lineNum += 1;
-        lines.push(`  ${prop.name}: Joi${this.joiType(prop)}${this.joiLimit(prop)}${this.joiRequired(prop)}${lineNum < model.properties.length ? ',' : ''}`);
-      });
-      lines.push('})');
+      _.each(models, model => {
+        lines.push(`const ${_.camelCase(model.name)} = Joi.object().keys({`);
+        let lineNum = 0;
+        _.each(model.properties, (prop) => {
+          lineNum += 1;
+          lines.push(`  ${prop.name}: Joi${this.joiType(prop)}${this.joiLimit(prop)}${this.joiRequired(prop)}${lineNum < model.properties.length ? ',' : ''}`);
+        });
+        lines.push('})');
+        lines.push('');
+      })
     } catch (err) {
     }
     return lines.join('\n');
